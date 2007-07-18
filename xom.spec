@@ -38,7 +38,7 @@ Name:           xom
 # FIXME: requires jdom
 # FIXME: 1.1 requires jaxen
 Version:        1.0
-Release:        %mkrel 4.1
+Release:        %mkrel 4.2
 Epoch:          0
 License:        LGPL
 URL:            http://www.xom.nu
@@ -53,19 +53,19 @@ BuildRequires:  junit
 BuildRequires:  xalan-j2
 BuildRequires:  xerces-j2
 BuildRequires:  icu4j
-BuildRequires:  xml-commons-apis
+BuildRequires:  xml-commons-jaxp-1.3-apis
 
 %if !%{bootstrap}
 BuildRequires:  tagsoup
 BuildRequires:  saxon
 BuildRequires:  jaxp_parser_impl
-BuildRequires:  xml-commons-resolver
+BuildRequires:  xml-commons-resolver12
 BuildRequires:  servlet
 %endif
 Requires:  xalan-j2
 Requires:  xerces-j2
 Requires:  icu4j
-Requires:  xml-commons-apis
+Requires:  xml-commons-jaxp-1.3-apis
 %if !%{gcj_support}
 BuildArch:      noarch
 BuildRequires:  java-devel
@@ -122,7 +122,7 @@ ln -sf $(build-classpath junit) junit.jar
 ln -sf $(build-classpath xerces-j2) xercesImpl.jar
 ln -sf $(build-classpath xalan-j2) xalan.jar
 ln -sf $(build-classpath icu4j) normalizer.jar
-ln -sf $(build-classpath xml-commons-apis) xmlParserAPIs.jar
+ln -sf $(build-classpath xml-commons-jaxp-1.3-apis) xmlParserAPIs.jar
 popd
 mkdir lib2
 %if ! %{bootstrap}
@@ -130,7 +130,7 @@ pushd lib2
 ln -sf $(build-classpath tagsoup) tagsoup-1.0rc1.jar
 ln -sf $(build-classpath saxon) saxon.jar
 ln -sf $(build-classpath jaxp_parser_impl) gnujaxp.jar
-ln -sf $(build-classpath xml-commons-resolver) resolver.jar
+ln -sf $(build-classpath xml-commons-resolver12) resolver.jar
 DOM4J_PRESENT=$(build-classpath dom4j 2>/dev/null || :)
 if [ -n "$DOM4J_PRESENT" ]; then
 ln -sf $(build-classpath dom4j) dom4j-1.5.1.jar
