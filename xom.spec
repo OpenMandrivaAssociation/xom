@@ -38,7 +38,7 @@ Name:           xom
 # FIXME: requires jdom
 # FIXME: 1.1 requires jaxen
 Version:        1.0
-Release:        %mkrel 4.2
+Release:        %mkrel 4.3
 Epoch:          0
 License:        LGPL
 URL:            http://www.xom.nu
@@ -74,8 +74,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if %{gcj_support}
 BuildRequires:    java-gcj-compat-devel
-Requires(post):   java-gcj-compat
-Requires(postun): java-gcj-compat
 %endif
 
 %description
