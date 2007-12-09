@@ -30,32 +30,35 @@
 
 %bcond_with test
 %define gcj_support 1
-%define bootstrap 0
+%bcond_with bootstrap
 %define section free
 
 Summary:        XML Pull Parser
 Name:           xom
-# FIXME: requires jdom
-# FIXME: 1.1 requires jaxen
-Version:        1.0
-Release:        %mkrel 4.3
+Version:        1.1
+Release:        %mkrel 0.0.1
 Epoch:          0
 License:        LGPL
-URL:            http://www.xom.nu
+URL:            http://www.xom.nu/
 Group:          Development/Java
-#Vendor:         JPackage Project
-#Distribution:   JPackage
-Source0:        http://www.cafeconleche.org/XOM/xom-%{version}.tar.gz
+Source0:        http://www.cafeconleche.org/XOM/xom-%{version}-src.tar.gz
+Patch0:         xom-1.1-remove-jaxen.patch
+Patch1:         xom-1.1-clean-dist.patch
+Patch2:         xom-1.1-compile15.patch
+Patch3:         xom-1.1-remove_sun_import.patch
+Patch4:         xom-1.1-build.patch
+Patch5:         xom-1.1-sinjdoc.patch
 BuildRequires:  jpackage-utils >= 0:1.6
 BuildRequires:  ant >= 0:1.6
 BuildRequires:  ant-junit
+BuildRequires:  jaxen
 BuildRequires:  junit
 BuildRequires:  xalan-j2
 BuildRequires:  xerces-j2
 BuildRequires:  icu4j
 BuildRequires:  xml-commons-jaxp-1.3-apis
 
-%if !%{bootstrap}
+%if %without bootstrap
 BuildRequires:  tagsoup
 BuildRequires:  saxon
 BuildRequires:  jaxp_parser_impl
@@ -88,17 +91,15 @@ you should be able to get up and running with XOM very quickly.
 %package javadoc
 Summary:        Javadoc for %{name}
 Group:          Development/Java
-Requires(post):   /bin/rm,/bin/ln
-Requires(postun): /bin/rm
 
 %description javadoc
 %{summary}.
 
-%if ! %{bootstrap}
+%if %without bootstrap
 %package demo
 Summary:        Samples for %{name}
 Group:          Development/Java
-Requires:       %{name} = 0:%{version}
+Requires:       %{name} = %{epoch}:%{version}-%{release}
 
 %description demo
 %{summary}.
@@ -106,14 +107,19 @@ Requires:       %{name} = 0:%{version}
 
 %prep
 %setup -q -n XOM
+# remove all binary libs
+%{_bindir}/find . -name "*.jar" -o -name "*.class" | %{_bindir}/xargs -t %{__rm}
+%patch0 -p0
+%patch1 -p0
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1 -b .orig
 %{__perl} -pi -e 's/\r$//g' *.html *.txt
 %{__perl} -pi -e 's/compress="no"/compress="yes"/g' build.xml
 
-# remove all binary libs
-%{_bindir}/find . -name "*.jar" | %{_bindir}/xargs -t %{__rm}
-
 %build
-export CLASSPATH=$(build-classpath icu4j)
+export CLASSPATH=$(build-classpath icu4j jaxen)
 export OPT_JAR_LIST="ant/ant-junit"
 pushd lib
 ln -sf $(build-classpath junit) junit.jar
@@ -123,7 +129,7 @@ ln -sf $(build-classpath icu4j) normalizer.jar
 ln -sf $(build-classpath xml-commons-jaxp-1.3-apis) xmlParserAPIs.jar
 popd
 mkdir lib2
-%if ! %{bootstrap}
+%if %without bootstrap
 pushd lib2
 ln -sf $(build-classpath tagsoup) tagsoup-1.0rc1.jar
 ln -sf $(build-classpath saxon) saxon.jar
@@ -137,12 +143,12 @@ ln -sf $(build-classpath servlet) servlet.jar
 popd
 %endif
 
-%if %{bootstrap}
-ant jar
+%if %with bootstrap
+%{ant} jar javadoc
 %else
-ant jar samples betterdoc
+%{ant} jar samples javadoc
 %if %with test
-ant test
+%{ant} test
 %endif
 %endif
 
@@ -158,7 +164,7 @@ install -m 644 build/%{name}-%{version}.jar \
 
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -pr apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
+cp -a build/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
 
@@ -169,7 +175,7 @@ install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
 install -m 644 overview.html $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
 install -m 644 *.txt $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
 
-%if ! %{bootstrap}
+%if %without bootstrap
 # demo
 install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
 install -m 644 build/xom-samples.jar $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
@@ -185,29 +191,12 @@ install -m 644 xom.graffle $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post javadoc
-rm -f %{_javadocdir}/%{name}
-ln -s %{name}-%{version} %{_javadocdir}/%{name}
-
-%postun javadoc
-if [ "$1" = "0" ]; then
-  rm -f %{_javadocdir}/%{name}
-fi
-
 %if %{gcj_support}
 %post
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
-%endif
+%{update_gcjdb}
 
-%if %{gcj_support}
 %postun
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
+%{clean_gcjdb}
 %endif
 
 %files
@@ -217,21 +206,22 @@ fi
 %{_datadir}/doc/%{name}-%{version}/LICENSE.txt
 %{_datadir}/doc/%{name}-%{version}/Todo.txt
 %{_datadir}/doc/%{name}-%{version}/lgpl.txt
-%if ! %{bootstrap}
+%if %without bootstrap
 %{_datadir}/%{name}-%{version}/xom.graffle
 %endif
 %{_javadir}/%{name}.jar
 %{_javadir}/%{name}-%{version}.jar
 %if %{gcj_support}
-%attr(-,root,root) %{_libdir}/gcj/%{name}
+%dir %{_libdir}/gcj/%{name}
+%attr(-,root,root) %{_libdir}/gcj/%{name}/*
 %endif
 
 %files javadoc
 %defattr(0644,root,root,0755)
 %{_javadocdir}/%{name}-%{version}
-%ghost %{_javadocdir}/%{name}
+%{_javadocdir}/%{name}
 
-%if ! %{bootstrap}
+%if %without bootstrap
 %files demo
 %defattr(0644,root,root,0755)
 %{_datadir}/%{name}-%{version}/xom-samples.jar
