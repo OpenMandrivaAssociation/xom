@@ -36,7 +36,7 @@
 Summary:        XML Pull Parser
 Name:           xom
 Version:        1.1
-Release:        %mkrel 0.0.1
+Release:        %mkrel 0.0.2
 Epoch:          0
 License:        LGPL
 URL:            http://www.xom.nu/
@@ -48,7 +48,7 @@ Patch2:         xom-1.1-compile15.patch
 Patch3:         xom-1.1-remove_sun_import.patch
 Patch4:         xom-1.1-build.patch
 Patch5:         xom-1.1-sinjdoc.patch
-BuildRequires:  jpackage-utils >= 0:1.6
+BuildRequires:  java-rpmbuild >= 0:1.6
 BuildRequires:  ant >= 0:1.6
 BuildRequires:  ant-junit
 BuildRequires:  jaxen
