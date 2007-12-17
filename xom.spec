@@ -73,7 +73,6 @@ Requires:  xml-commons-jaxp-1.3-apis
 BuildArch:      noarch
 BuildRequires:  java-devel
 %endif
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 %if %{gcj_support}
 BuildRequires:    java-gcj-compat-devel
