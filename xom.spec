@@ -36,7 +36,7 @@
 Summary:        XML Pull Parser
 Name:           xom
 Version:        1.2b1
-Release:        %mkrel 0.0.1
+Release:        %mkrel 0.0.2
 Epoch:          0
 License:        LGPL
 URL:            http://www.xom.nu/
@@ -143,11 +143,11 @@ popd
 %endif
 
 %if %with bootstrap
-%{ant} jar javadoc
+JAVA_HOME=%{_jvmdir}/java-gcj ant jar javadoc
 %else
-%{ant} jar samples javadoc
+JAVA_HOME=%{_jvmdir}/java-gcj ant jar samples javadoc
 %if %with test
-%{ant} test
+JAVA_HOME=%{_jvmdir}/java-gcj ant test
 %endif
 %endif
 
