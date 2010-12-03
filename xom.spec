@@ -36,7 +36,7 @@
 Summary:        XML Pull Parser
 Name:           xom
 Version:        1.2b1
-Release:        %mkrel 0.0.4
+Release:        %mkrel 0.0.5
 Epoch:          0
 License:        LGPL
 URL:            http://www.xom.nu/
