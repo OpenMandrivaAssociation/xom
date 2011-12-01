@@ -153,43 +153,43 @@ JAVA_HOME=%{_jvmdir}/java-gcj ant test
 %endif
 
 %install
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 # jars
-install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
+install -d -m 755 %{buildroot}%{_javadir}
 
 install -m 644 build/%{name}-%{version}.jar \
-  $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
-(cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}.jar; do ln -sf ${jar} `echo $jar| sed "s|-%{version}||g"`; done)
+  %{buildroot}%{_javadir}/%{name}-%{version}.jar
+(cd %{buildroot}%{_javadir} && for jar in *-%{version}.jar; do ln -sf ${jar} `echo $jar| sed "s|-%{version}||g"`; done)
 
 # javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -a build/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+install -d -m 755 %{buildroot}%{_javadocdir}/%{name}-%{version}
+cp -a build/apidocs/* %{buildroot}%{_javadocdir}/%{name}-%{version}
+ln -s %{name}-%{version} %{buildroot}%{_javadocdir}/%{name}
 
 
 rm -rf doc/{build.txt,api,api_impl}
 
 # docs
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
-install -m 644 overview.html $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
-install -m 644 *.txt $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
+install -d -m 755 %{buildroot}%{_datadir}/doc/%{name}-%{version}
+install -m 644 overview.html %{buildroot}%{_datadir}/doc/%{name}-%{version}
+install -m 644 *.txt %{buildroot}%{_datadir}/doc/%{name}-%{version}
 
 %if %without bootstrap
 # demo
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
-install -m 644 build/xom-samples.jar $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
-install -m 644 xom.graffle $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
+install -d -m 755 %{buildroot}%{_datadir}/%{name}-%{version}
+install -m 644 build/xom-samples.jar %{buildroot}%{_datadir}/%{name}-%{version}
+install -m 644 xom.graffle %{buildroot}%{_datadir}/%{name}-%{version}
 %endif
 
-%{_bindir}/find $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version} -type f | %{_bindir}/xargs -t %{__perl} -pi -e 's/\r$//g'
+%{_bindir}/find %{buildroot}%{_javadocdir}/%{name}-%{version} -type f | %{_bindir}/xargs -t %{__perl} -pi -e 's/\r$//g'
 
 %if %{gcj_support}
 %{_bindir}/aot-compile-rpm
 %endif
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %if %{gcj_support}
 %post
