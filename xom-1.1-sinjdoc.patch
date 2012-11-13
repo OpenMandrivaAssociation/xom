@@ -1,0 +1,41 @@
+--- XOM/src/nu/xom/Nodes.java.orig	2005-09-16 23:20:12.000000000 +0200
++++ XOM/src/nu/xom/Nodes.java	2007-12-09 07:24:15.000000000 +0100
+@@ -116,25 +116,22 @@
+         return (Node) nodes.get(index);   
+     }
+ 
+-    
++
+     /**
+      * <p>
+      * Removes the index<sup>th</sup>node in the list.
+      * Subsequent nodes have their indexes reduced by one.
+      * </p>
+-     * 
++     *
+      * @param index the node to remove
+-     * 
++     *
+      * @return the node at the specified position
+-     * 
+-     * @throws <code>IndexOutOfBoundsException</code> if index is  
+-     *     negative or greater than or equal to the size of the list
+      */
+     public Node remove(int index) {
+-        return (Node) nodes.remove(index);   
++        return (Node) nodes.remove(index);
+     }
+-    
+-    
++
++
+     /**
+      * <p>
+      * Inserts a node at the index<sup>th</sup> position in the list.
+@@ -188,4 +185,4 @@
+     }
+ 
+     
+-}
+\ No newline at end of file
++}
