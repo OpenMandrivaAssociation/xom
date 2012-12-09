@@ -1,0 +1,10 @@
+--- build.xml	2011-09-25 13:29:04.691600733 +0200
++++ build.xml-gil	2011-09-25 13:33:14.248616078 +0200
+@@ -442,6 +442,7 @@
+              charset="UTF-8"
+              noqualifier="java.lang:java.io"
+              link="http://www.junit.org/junit/javadoc/3.8.1"
++             linkoffline="http://www.junit.org/junit/javadoc/3.8.1 org.junit"
+              doctitle="${Name} ${version}"
+              bottom="Copyright 2002-${year} &lt;a href='http://www.elharo.com/'&gt;Elliotte Rusty Harold&lt;/a&gt;
+ 			 &lt;br/&gt; &lt;a href='mailto:elharo@metalab.unc.edu?Subject=XOM'&gt;elharo@metalab.unc.edu&lt;/a&gt;">

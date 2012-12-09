@@ -1,0 +1,10 @@
+--- build.xml	2010-01-18 15:09:57.000000000 +0100
++++ build.xml-gil	2010-01-18 15:11:57.000000000 +0100
+@@ -429,6 +429,7 @@
+           description="Generate the API documentation">
+     <mkdir dir="${build.javadocs}"/>
+     <javadoc packagenames="nu.xom.xslt, nu.xom.canonical, nu.xom.xinclude, nu.xom, nu.xom.converters"
++             additionalparam="-J-Xss1m"
+              sourcepath="${build.src}"
+              destdir="${build.javadocs}"
+              author="true"
