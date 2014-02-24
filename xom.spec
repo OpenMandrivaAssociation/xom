@@ -1,4 +1,5 @@
-# Copyright (c) 2000-2007, JPackage Project
+%{?_javapackages_macros:%_javapackages_macros}
+# Copyright (c) 2000-2005, JPackage Project
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,180 +29,129 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-#bcond_with test
-%define with_test 0
-%define gcj_support 0
-#bcond_without bootstrap
-%define with_bootstrap 0
-%define section free
+# To build with dom4j issue rpmbuild --with dom4j xom.spec
+
+%define with_dom4j %{?_with_dom4j:1}%{!?_with_dom4j:0}
+%define without_dom4j %{!?_with_dom4j:1}%{?_with_dom4j:0}
 
 Summary:        XML Pull Parser
 Name:           xom
-Version:        1.2.1
-Release:        2
+Version:        1.0
+Release:        14.0%{?dist}
 Epoch:          0
-License:        LGPL
-URL:            http://www.xom.nu/
-Group:          Development/Java
-Source0:        http://www.cafeconleche.org/XOM/xom-1.2.1-src.tar.gz
-Source1:        xom-1.2.1.pom
-Patch0:         xom-1.2.1-remove_jaxen.patch
-Patch1:         xom-1.1-clean-dist.patch
-Patch2:         xom-1.1-compile15.patch
-Patch3:         xom-1.1-remove_sun_import.patch
-Patch4:         xom-1.1-build.patch
-Patch5:         xom-1.1-sinjdoc.patch
-Patch6:         xom-1.0-betterdocclasspath.patch
-Patch7:         xom-1.2.1-gjdocissues.patch
-Patch8:         xom-1.2.1-javadoc-stack-size.patch
-Patch9:         xom-1.2.1-crosslinks.patch
-Patch10:        xom-1.2.1-betterdoc-stack-size.patch
+License:        LGPLv2
+URL:            http://www.xom.nu
 
-BuildRequires:  java-rpmbuild >= 0:1.6
-BuildRequires:  java-javadoc
-BuildRequires:  ant >= 0:1.6
-BuildRequires:  ant-junit
-BuildRequires:  jaxen >= 1.1.2-1.3
+Source0:        http://www.cafeconleche.org/XOM/xom-1.0.tar.gz
+Source1:        http://central.maven.org/maven2/xom/xom/1.0/xom-1.0.pom
+
+# Evidently gjdoc doesn't know about the noqualifier option; also, it
+# must do linkoffline and not link
+Patch0:         %{name}-gjdocissues.patch
+# FIXME:  file this
+# I don't know if this is a libgcj bug or if this is a legitimate typo
+# in build.xml
+Patch1:         %{name}-betterdocclasspath.patch
+# Replace icu4j by java.text from JDK to reduce dependency chain
+Patch2:         %{name}-Replace-icu4j-with-JDK.patch
+
+BuildRequires:  ant >= 0:1.6, jpackage-utils >= 0:1.6
 BuildRequires:  junit
-BuildRequires:  junit-javadoc
 BuildRequires:  xalan-j2
 BuildRequires:  xerces-j2
-BuildRequires:  icu4j
-BuildRequires:  xml-commons-jaxp-1.3-apis
-
-%if !%with_bootstrap
-BuildRequires:  tagsoup
-BuildRequires:  saxon
-BuildRequires:  saxon-aelfred
-BuildRequires:  jaxp_parser_impl
-#BuildRequires:  xml-commons-resolver12
-BuildRequires:  xml-commons-resolver
-BuildRequires:  servletapi5
+%if %{with_dom4j}
+BuildRequires:  dom4j
 %endif
+BuildRequires:  xml-commons-apis
+
+BuildRequires:  tagsoup
+# Use JAXP implementation in JDK
+BuildRequires:  java-devel
+BuildRequires:  xml-commons-resolver
+BuildRequires:  servlet
+
 Requires:  xalan-j2
 Requires:  xerces-j2
-Requires:  icu4j
-Requires:  jaxen >= 1.1.2-1.3
-Requires:  xml-commons-jaxp-1.3-apis
-%if !%{gcj_support}
-BuildArch:      noarch
-BuildRequires:  java-devel
-BuildRequires:  java-gcj-compat-devel
-%endif
-
+Requires:  xml-commons-apis
+Requires:  jpackage-utils
+BuildArch: noarch
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
-XOM is a new XML object model. It is an open source (LGPL), 
-tree-based API for processing XML with Java that strives 
-for correctness, simplicity, and performance, in that order. 
-XOM is designed to be easy to learn and easy to use. It 
-works very straight-forwardly, and has a very shallow 
-learning curve. Assuming you're already familiar with XML, 
+XOM is a new XML object model. It is an open source (LGPL),
+tree-based API for processing XML with Java that strives
+for correctness, simplicity, and performance, in that order.
+XOM is designed to be easy to learn and easy to use. It
+works very straight-forwardly, and has a very shallow
+learning curve. Assuming you're already familiar with XML,
 you should be able to get up and running with XOM very quickly.
 
 %package javadoc
 Summary:        Javadoc for %{name}
-Group:          Development/Java
+
+Requires:       jpackage-utils
 
 %description javadoc
-XML Pull Parser.
+%{summary}.
 
-%if !%with_bootstrap
 %package demo
 Summary:        Samples for %{name}
-Group:          Development/Java
-Requires:       %{name} = %{epoch}:%{version}-%{release}
+
+Requires:       %{name} = 0:%{version}
 
 %description demo
-XML Pull Parser.
-%endif
+%{summary}.
 
 %prep
 %setup -q -n XOM
-# remove all binary libs
-%{_bindir}/find . -name "*.jar" -o -name "*.class" | %{_bindir}/xargs -t %{__rm}
-%patch0 -p0
-%patch1 -p0
+%patch0
+%patch1
 %patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1 -b .orig
-%patch6 -p1
-%patch7 -p0
-%patch8 -p0
-%patch9 -p0
-%patch10 -p0
+# remove all binary libs
+find . -name "*.jar" -exec rm -f {} \;
+# disable tests that require icu4j
+rm -f src/nu/xom/tests/{Encoding,Verifier}Test.java
 
+cp %{SOURCE1} pom.xml
+# fix xml stuff in pom
+sed -i 's%<project>%<project xmlns="http://maven.apache.org/POM/4.0.0" \
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 \
+http://maven.apache.org/maven-v4_0_0.xsd ">%' pom.xml
+# remove it from pom.xml since it's not needed anymore
+%pom_remove_dep com.ibm.icu:icu4j
 
-%{__perl} -pi -e 's/\r$//g' *.html *.txt
-%{__perl} -pi -e 's/compress="no"/compress="yes"/g' build.xml
 
 %build
-export CLASSPATH=$(build-classpath icu4j jaxen)
-export OPT_JAR_LIST="ant/ant-junit"
 pushd lib
 ln -sf $(build-classpath junit) junit.jar
 ln -sf $(build-classpath xerces-j2) xercesImpl.jar
-ln -sf $(build-classpath xerces-j2) dtd-xercesImpl.jar
 ln -sf $(build-classpath xalan-j2) xalan.jar
-ln -sf $(build-classpath icu4j) normalizer.jar
-ln -sf $(build-classpath xml-commons-jaxp-1.3-apis) xmlParserAPIs.jar
+ln -sf $(build-classpath xml-commons-apis) xmlParserAPIs.jar
 popd
 mkdir lib2
-%if !%with_bootstrap
 pushd lib2
-ln -sf $(build-classpath tagsoup) tagsoup-1.2.jar
-ln -sf $(build-classpath saxon) saxon.jar
-ln -sf $(build-classpath saxon-aelfred) saxon.jar
-ln -sf $(build-classpath jaxp_parser_impl) gnujaxp.jar
-#ln -sf $(build-classpath xml-commons-resolver12) resolver.jar
+ln -sf $(build-classpath tagsoup) tagsoup-1.0rc1.jar
 ln -sf $(build-classpath xml-commons-resolver) resolver.jar
-DOM4J_PRESENT=$(build-classpath dom4j 2>/dev/null || :)
-if [ -n "$DOM4J_PRESENT" ]; then
-ln -sf $(build-classpath dom4j) dom4j-1.5.1.jar
-fi
-ln -sf $(build-classpath servletapi5) servlet.jar
+
+%if %{with_dom4j}
+ln -sf $(build-classpath dom4j) dom4j.jar
+%endif
+
+ln -sf $(build-classpath servlet) servlet.jar
 popd
 
-%endif
+ant jar samples betterdoc
 
-%if %with_bootstrap
-ant \
-  -Dant.build.javac.source=1.4 \
-  -Dant.build.javac.target=1.4 \
-  -Dbuild.sysclasspath=first \
-  -Dj2se.api=%{_javadocdir}/java \
-  -Djunit.api=%{_javadocdir}/junit \
-  jar javadoc
-
-%else
-
-ant \
-  -Dant.build.javac.source=1.4 \
-  -Dant.build.javac.target=1.4 \
-  -Dbuild.sysclasspath=first \
-  -Dj2se.api=%{_javadocdir}/java \
-  -Djunit.api=%{_javadocdir}/junit \
-  jar samples betterdoc
-
-%if %with_test
-ant \
-  -Dant.build.javac.source=1.4 \
-  -Dant.build.javac.target=1.4 \
-  -Dbuild.sysclasspath=first \
-  test
-%endif
-%endif
-
-pushd build/apidocs
-  for f in `find -name \*.css -o -name \*.html`; do
-    sed -i 's/\r//g' $f
-  done
+# Fix encoding
+sed -i 's/\r//g' LICENSE.txt
+pushd apidocs
+for f in `find -name \*.css -o -name \*.html`; do
+  sed -i 's/\r//g' $f
+done
 popd
 
 %install
-rm -rf $RPM_BUILD_ROOT
-
 # jars
 install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
 
@@ -211,146 +161,104 @@ install -m 644 build/%{name}-%{version}.jar \
 
 # javadoc
 install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -a build/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
+cp -pr apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
 ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
 
-
-rm -rf doc/{build.txt,api,api_impl}
-
-# docs
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
-install -m 644 overview.html $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
-install -m 644 *.txt $RPM_BUILD_ROOT%{_datadir}/doc/%{name}-%{version}
-
-%if !%with_bootstrap
 # demo
 install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
 install -m 644 build/xom-samples.jar $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
-install -m 644 xom.graffle $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
-%endif
 
-%{_bindir}/find $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version} -type f | %{_bindir}/xargs -t %{__perl} -pi -e 's/\r$//g'
+# POM
+install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
+install -m 644 pom.xml $RPM_BUILD_ROOT%{_mavenpomdir}/JPP-%{name}.pom
+%add_maven_depmap JPP-%{name}.pom %{name}.jar
 
-%if %{gcj_support}
-%{_bindir}/aot-compile-rpm
-%endif
-
-mkdir -p %{buildroot}%{_mavenpomdir}
-install -pm 644 %{SOURCE1} $RPM_BUILD_ROOT%{_mavenpomdir}/JPP-%{name}.pom
-%add_to_maven_depmap %{name} %{name} %{version} JPP %{name}
-
-%post
-%update_maven_depmap
-%if %{gcj_support}
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
-%endif
-
-%postun
-%update_maven_depmap
-%if %{gcj_support}
-if [ -x %{_bindir}/rebuild-gcj-db ]
-then
-  %{_bindir}/rebuild-gcj-db
-fi
-%endif
+%clean
+rm -rf $RPM_BUILD_ROOT
 
 %files
-%{_datadir}/doc/%{name}-%{version}/overview.html
-%{_datadir}/doc/%{name}-%{version}/README.txt
-%{_datadir}/doc/%{name}-%{version}/LICENSE.txt
-%{_datadir}/doc/%{name}-%{version}/Todo.txt
-%{_datadir}/doc/%{name}-%{version}/lgpl.txt
-%if !%with_bootstrap
-%{_datadir}/%{name}-%{version}/xom.graffle
-%endif
+%defattr(0644,root,root,0755)
+%doc overview.html
+%doc README.txt
+%doc LICENSE.txt
+%doc Todo.txt
+%doc lgpl.txt
+%doc %{name}.graffle
 %{_javadir}/%{name}.jar
 %{_javadir}/%{name}-%{version}.jar
-%{_mavenpomdir}/*
+%{_mavenpomdir}/JPP-%{name}.pom
 %{_mavendepmapfragdir}/*
-%if %{gcj_support}
-%dir %{_libdir}/gcj/%{name}
-%attr(-,root,root) %{_libdir}/gcj/%{name}/*
-%endif
 
 %files javadoc
-%{_javadocdir}/%{name}-%{version}
-%{_javadocdir}/%{name}
+%defattr(0644,root,root,0755)
+%{_javadocdir}/*
 
-%if !%with_bootstrap
 %files demo
+%defattr(0644,root,root,0755)
+%dir %{_datadir}/%{name}-%{version}
 %{_datadir}/%{name}-%{version}/xom-samples.jar
-%endif
-
 
 %changelog
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-* Fri Nov 11 2011 gil <gil> 0:1.2.1-1.mga2
-+ Revision: 166422
-- update to 1.2.1 , added m2 pom
+* Fri Jun 28 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:1.0-13
+- Replace BR on libgcj with generic java-devel
 
-* Sun Jan 16 2011 dmorgan <dmorgan> 0:1.2b1-0.0.5.mga1
-+ Revision: 20261
-- Fix find of javac and boot strap
-- imported package xom
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
+* Tue Nov 27 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 0:1.0-11
+- Remove icu4j dependency from pom.xml
 
-* Sat Dec 04 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.2b1-0.0.5mdv2011.0
-+ Revision: 608225
-- rebuild
+* Mon Oct  8 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 0:1.0-10
+- Replace icu4j Normalizer with java.text.Normalizer from JDK
 
-* Wed Mar 17 2010 Oden Eriksson <oeriksson@mandriva.com> 0:1.2b1-0.0.4mdv2010.1
-+ Revision: 524458
-- rebuilt for 2010.1
+* Fri Aug 10 2012 Andy Grimm <agrimm@gmail.com> - 0:1.0-9
+- add POM
 
-* Sat Mar 07 2009 Antoine Ginies <aginies@mandriva.com> 0:1.2b1-0.0.3mdv2009.1
-+ Revision: 350879
-- rebuild
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-8.6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
-* Fri Dec 21 2007 Olivier Blin <oblin@mandriva.com> 0:1.2b1-0.0.2mdv2009.0
-+ Revision: 136618
-- restore BuildRoot
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-7.6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
-* Thu Dec 20 2007 David Walluck <walluck@mandriva.org> 0:1.2b1-0.0.2mdv2008.1
-+ Revision: 135399
-- build with gcj for now
-- 1.2b1
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-6.6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
-  + Thierry Vignaud <tv@mandriva.org>
-    - kill re-definition of %%buildroot on Pixel's request
+* Thu Mar 11 2010 Peter Lemenkov <lemenkov@gmail.com> - 0:1.0-5.6
+- Added missing Requires: jpackage-utils (%%{_javadir} and %%{_javadocdir})
 
-  + Anssi Hannula <anssi@mandriva.org>
-    - buildrequire java-rpmbuild, i.e. build with icedtea on x86(_64)
+* Mon Jul 27 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-5.5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
-* Sun Dec 09 2007 David Walluck <walluck@mandriva.org> 0:1.1-0.0.1mdv2008.1
-+ Revision: 116657
-- 1.1
+* Thu Feb 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-4.5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
-* Sat Sep 15 2007 Anssi Hannula <anssi@mandriva.org> 0:1.0-4.3mdv2008.0
-+ Revision: 87300
-- rebuild to filter out autorequires of GCJ AOT objects
-- remove unnecessary Requires(post) on java-gcj-compat
+* Thu Jul 10 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0:1.0-3.5
+- drop repotag
+- fix license tag
 
-* Wed Jul 18 2007 Anssi Hannula <anssi@mandriva.org> 0:1.0-4.2mdv2008.0
-+ Revision: 53223
-- use xml-commons-jaxp-1.3-apis and xml-commons-resolver12 explicitely
-  instead of the generic xml-commons-apis and xml-commons-resolver which
-  are provided by multiple packages (see bug #31473)
+* Mon Mar 26 2007 Nuno Santos <nsantos@redhat.com> 0:1.0-3jpp.4.fc7
+- Apply patch from bugs.michael@gmx.net to fix unowned directory
 
-* Mon Apr 23 2007 David Walluck <walluck@mandriva.org> 0:1.0-4.1mdv2008.0
-+ Revision: 17156
-- Import xom
+* Mon Mar 12 2007 Vivek Lakshmanan <vivekl@redhat.com> 0:1.0-3jpp.3.fc7
+- Make build with dom4j optional (off by default)
 
+* Mon Mar 12 2007 Vivek Lakshmanan <vivekl@redhat.com> 0:1.0-3jpp.2.fc7
+- Remove BR on classpathx-jaxp since libgcj includes the required bits
 
-
-* Mon Apr 23 2007 David Walluck <walluck@mandriva.org> 0:1.0-4.1mdv2008.0
-- release
-
-* Mon Feb 12 2007 Ralph Apel <r.apel at r-apel.de> - 0:1.0-4jpp
-- Add option to build core on bootstrap
-- Add gcj_support option
+* Wed Feb 14 2007 Andrew Overholt <overholt@redhat.com> 0:1.0-3jpp.1
+- Update for Fedora review
+- Remov Vendor & Distribution tags
+- Add .1%%{?dist} to release
+- Remove bad javadoc symlinking and %%post{,un}
+- Fixe buildroot
+- Use %%doc for doc files
+- Change group to Development/Libraries
+- Remove running of tests; should perhaps move to %%check
+- Fix encoding of LICENSE.txt and generated javadocs
+- Remove BR: saxon
 
 * Tue Feb 28 2006 Fernando Nasser <fnasser@redhat.com> - 0:1.0-3jpp
 - Remove dependency on clover10 (non-free)
