@@ -34,10 +34,11 @@
 %define with_dom4j %{?_with_dom4j:1}%{!?_with_dom4j:0}
 %define without_dom4j %{!?_with_dom4j:1}%{?_with_dom4j:0}
 
-Summary:        XML Pull Parser
+Summary:        XML Object Model
 Name:           xom
 Version:        1.0
-Release:        14.0%{?dist}
+Release:        16.1
+Group:          Development/Java
 Epoch:          0
 License:        LGPLv2
 URL:            http://www.xom.nu
@@ -73,9 +74,7 @@ BuildRequires:  servlet
 Requires:  xalan-j2
 Requires:  xerces-j2
 Requires:  xml-commons-apis
-Requires:  jpackage-utils
 BuildArch: noarch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 XOM is a new XML object model. It is an open source (LGPL),
@@ -88,8 +87,6 @@ you should be able to get up and running with XOM very quickly.
 
 %package javadoc
 Summary:        Javadoc for %{name}
-
-Requires:       jpackage-utils
 
 %description javadoc
 %{summary}.
@@ -113,11 +110,6 @@ find . -name "*.jar" -exec rm -f {} \;
 rm -f src/nu/xom/tests/{Encoding,Verifier}Test.java
 
 cp %{SOURCE1} pom.xml
-# fix xml stuff in pom
-sed -i 's%<project>%<project xmlns="http://maven.apache.org/POM/4.0.0" \
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 \
-http://maven.apache.org/maven-v4_0_0.xsd ">%' pom.xml
 # remove it from pom.xml since it's not needed anymore
 %pom_remove_dep com.ibm.icu:icu4j
 
@@ -156,47 +148,35 @@ popd
 install -d -m 755 $RPM_BUILD_ROOT%{_javadir}
 
 install -m 644 build/%{name}-%{version}.jar \
-  $RPM_BUILD_ROOT%{_javadir}/%{name}-%{version}.jar
-(cd $RPM_BUILD_ROOT%{_javadir} && for jar in *-%{version}.jar; do ln -sf ${jar} `echo $jar| sed "s|-%{version}||g"`; done)
+ $RPM_BUILD_ROOT%{_javadir}/%{name}.jar
 
 # javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -pr apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+cp -pr apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}/
 
 # demo
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
-install -m 644 build/xom-samples.jar $RPM_BUILD_ROOT%{_datadir}/%{name}-%{version}
+install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -m 644 build/xom-samples.jar $RPM_BUILD_ROOT%{_datadir}/%{name}/
 
 # POM
 install -d -m 755 $RPM_BUILD_ROOT%{_mavenpomdir}
 install -m 644 pom.xml $RPM_BUILD_ROOT%{_mavenpomdir}/JPP-%{name}.pom
-%add_maven_depmap JPP-%{name}.pom %{name}.jar
+%add_maven_depmap
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-%files
-%defattr(0644,root,root,0755)
+%files -f .mfiles
 %doc overview.html
 %doc README.txt
 %doc LICENSE.txt
 %doc Todo.txt
 %doc lgpl.txt
 %doc %{name}.graffle
-%{_javadir}/%{name}.jar
-%{_javadir}/%{name}-%{version}.jar
-%{_mavenpomdir}/JPP-%{name}.pom
-%{_mavendepmapfragdir}/*
 
 %files javadoc
-%defattr(0644,root,root,0755)
 %{_javadocdir}/*
 
 %files demo
-%defattr(0644,root,root,0755)
-%dir %{_datadir}/%{name}-%{version}
-%{_datadir}/%{name}-%{version}/xom-samples.jar
+%dir %{_datadir}/%{name}
+%{_datadir}/%{name}/xom-samples.jar
 
 %changelog
 * Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:1.0-14
