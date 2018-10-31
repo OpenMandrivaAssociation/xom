@@ -37,7 +37,7 @@
 Summary:        XML Object Model
 Name:           xom
 Version:        1.0
-Release:        16.2
+Release:        16.3
 Group:          Development/Java
 Epoch:          0
 License:        LGPLv2
