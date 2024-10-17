@@ -41,7 +41,7 @@ Release:        16.3
 Group:          Development/Java
 Epoch:          0
 License:        LGPLv2
-URL:            http://www.xom.nu
+URL:            https://www.xom.nu
 
 Source0:        http://www.cafeconleche.org/XOM/xom-1.0.tar.gz
 Source1:        http://central.maven.org/maven2/xom/xom/1.0/xom-1.0.pom
